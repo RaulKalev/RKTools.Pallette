@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+  Palette for Revit 2024 (.NET Framework 4.8).
+  Copy to %ProgramData%\Autodesk\Revit\Addins\2024\ (all users) or %AppData%\Autodesk\Revit\Addins\2024\ (current user)
+  and point <Assembly> to the net48 build of Palette.dll (single merged DLL):
+    Palette\bin\Release\net48\Palette.dll
+-->
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Palette</Name>
+    <Assembly>C:\Path\To\Palette\net48\Palette.dll</Assembly>
+    <FullClassName>Palette.App</FullClassName>
+    <AddInId>A661209B-2F28-4D4D-B721-381C5B2D8464</AddInId>
+    <VendorId>RaulKalev</VendorId>
+    <VendorDescription>Raul Kalev (RK Tools)</VendorDescription>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,277 @@
+<Window
+    x:Class="Palette.UI.PaletteWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Palette.UI"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:Palette.UI.ViewModels"
+    x:Name="Root"
+    Title="Palette"
+    Width="540"
+    MaxHeight="460"
+    Background="{DynamicResource Window.Background}"
+    ResizeMode="NoResize"
+    ShowActivated="True"
+    ShowInTaskbar="False"
+    SizeToContent="Height"
+    SnapsToDevicePixels="True"
+    TextOptions.TextFormattingMode="Display"
+    Topmost="True"
+    UseLayoutRounding="True"
+    WindowStartupLocation="Manual"
+    WindowStyle="None">
+    <!--
+        Launcher overlay: no caption, no resize border. WindowChrome keeps the native DWM shadow and (Windows 11)
+        rounded corners without AllowsTransparency, so rendering stays hardware accelerated.
+        The window is created once and shown/hidden; position and keyboard focus are set on every open.
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            GlassFrameThickness="0,0,0,1"
+            NonClientFrameEdges="None"
+            ResizeBorderThickness="0"
+            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--  Palette + materials are inserted at runtime by ThemeManager; styles use DynamicResource  -->
+                <ResourceDictionary Source="pack://application:,,,/Palette;component/UI/Themes/DarkTheme.xaml" />
+                <local:SharedDictionary Source="pack://application:,,,/Palette;component/UI/Themes/PaletteStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--  Result row container: selected state is always the accent tint (keyboard focus lives in the search box)  -->
+            <Style x:Key="ResultItem" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Padding" Value="8,0" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Border
+                                x:Name="Bd"
+                                Margin="0,1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="Transparent"
+                                CornerRadius="{StaticResource Radius.Control}">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Row.Hover}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Row.Selected}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <EventSetter Event="MouseLeftButtonUp" Handler="OnRowMouseUp" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <DataTemplate DataType="{x:Type vm:ResultRow}">
+                <Grid>
+                    <!--  Section header  -->
+                    <TextBlock
+                        x:Name="HeaderText"
+                        Margin="4,10,0,3"
+                        FontSize="{StaticResource FontSize.Caption}"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource Text.Tertiary}"
+                        Text="{Binding Header}"
+                        Visibility="Collapsed" />
+                    <!--  Command  -->
+                    <Grid
+                        x:Name="CommandGrid"
+                        Height="{StaticResource Size.Row}"
+                        ToolTip="{Binding Description}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="28" />
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource Accent.Text}"
+                            Kind="{Binding IconKind, Converter={StaticResource IconKind}}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="{StaticResource FontSize.Emphasis}"
+                            Foreground="{DynamicResource Text.Primary}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="12,0,4,0"
+                            VerticalAlignment="Center"
+                            FontSize="{StaticResource FontSize.Caption}"
+                            Foreground="{DynamicResource Text.Tertiary}"
+                            Text="{Binding Category}" />
+                        <Button
+                            Grid.Column="3"
+                            Width="24"
+                            Height="24"
+                            Click="OnStarClick"
+                            Focusable="False"
+                            Style="{StaticResource Button.Icon}"
+                            ToolTip="Favorite (Ctrl+D)"
+                            Visibility="{Binding ShowStar, Converter={StaticResource BoolToVis}}">
+                            <materialDesign:PackIcon
+                                x:Name="StarIcon"
+                                Width="16"
+                                Height="16"
+                                Kind="StarOutline" />
+                        </Button>
+                    </Grid>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                        <Setter TargetName="HeaderText" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="CommandGrid" Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                        <Setter TargetName="StarIcon" Property="Kind" Value="Star" />
+                        <Setter TargetName="StarIcon" Property="Foreground" Value="{DynamicResource Status.Warning}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border
+        BorderBrush="{DynamicResource Window.Stroke}"
+        BorderThickness="1"
+        TextElement.FontFamily="{StaticResource Font.Text}"
+        TextElement.FontSize="{StaticResource FontSize.Body}"
+        TextElement.Foreground="{DynamicResource Text.Primary}">
+        <DockPanel>
+            <!--  Footer: key hints + settings  -->
+            <Border
+                Height="32"
+                BorderBrush="{DynamicResource Separator}"
+                BorderThickness="0,1,0,0"
+                DockPanel.Dock="Bottom">
+                <Grid>
+                    <StackPanel
+                        Margin="14,0,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Type.Caption}" Text="&#x2191;&#x2193; select" />
+                        <TextBlock Margin="12,0,0,0" Style="{StaticResource Type.Caption}" Text="&#x21B5; run" />
+                        <TextBlock Margin="12,0,0,0" Style="{StaticResource Type.Caption}" Text="Esc close" />
+                        <TextBlock Margin="12,0,0,0" Style="{StaticResource Type.Caption}" Text="Ctrl+D favorite" />
+                    </StackPanel>
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="0,0,6,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Palette settings"
+                        Click="OnSettingsClick"
+                        Focusable="False"
+                        Style="{StaticResource Button.Icon}"
+                        ToolTip="Palette settings">
+                        <materialDesign:PackIcon
+                            Width="16"
+                            Height="16"
+                            Kind="CogOutline" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!--  Search field  -->
+            <Grid Height="52" Margin="16,0,16,0" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <materialDesign:PackIcon
+                    Width="20"
+                    Height="20"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource Text.Tertiary}"
+                    Kind="Magnify" />
+                <TextBox
+                    x:Name="SearchBox"
+                    Grid.Column="1"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    CaretBrush="{DynamicResource Text.Primary}"
+                    FocusVisualStyle="{x:Null}"
+                    FontSize="16"
+                    Foreground="{DynamicResource Text.Primary}"
+                    SelectionBrush="{DynamicResource Accent}"
+                    Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
+                    VerticalContentAlignment="Center"
+                    AutomationProperties.Name="Search commands"
+                    Padding="0" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Foreground="{DynamicResource Text.Tertiary}"
+                    IsHitTestVisible="False"
+                    Text="Search commands...">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+            <Border
+                Height="1"
+                Background="{DynamicResource Separator}"
+                DockPanel.Dock="Top" />
+
+            <!--  Results  -->
+            <Grid>
+                <ListBox
+                    x:Name="ResultsList"
+                    MaxHeight="360"
+                    Margin="0,2"
+                    Padding="6,2"
+                    AutomationProperties.Name="Commands"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Focusable="False"
+                    ItemContainerStyle="{StaticResource ResultItem}"
+                    ItemsSource="{Binding Rows}"
+                    ScrollViewer.CanContentScroll="True"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                    SelectionMode="Single"
+                    VirtualizingPanel.IsVirtualizing="True"
+                    Visibility="{Binding HasRows, Converter={StaticResource BoolToVis}}" />
+                <TextBlock
+                    Margin="16,18"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource Type.Secondary}"
+                    Text="{Binding EmptyMessage}"
+                    Visibility="{Binding HasRows, Converter={StaticResource InverseBoolToVis}}" />
+            </Grid>
+        </DockPanel>
+    </Border>
+</Window>

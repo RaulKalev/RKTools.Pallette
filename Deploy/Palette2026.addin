@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+  Palette for Revit 2026 (.NET 8).
+  Copy to %ProgramData%\Autodesk\Revit\Addins\2026\ (all users) or %AppData%\Autodesk\Revit\Addins\2026\ (current user)
+  and point <Assembly> to the net8.0-windows build of Palette.dll (single merged DLL):
+    Palette\bin\Release\net8.0-windows\Palette.dll
+-->
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Palette</Name>
+    <Assembly>C:\Path\To\Palette\net8.0-windows\Palette.dll</Assembly>
+    <FullClassName>Palette.App</FullClassName>
+    <AddInId>A661209B-2F28-4D4D-B721-381C5B2D8464</AddInId>
+    <VendorId>RaulKalev</VendorId>
+    <VendorDescription>Raul Kalev (RK Tools)</VendorDescription>
+  </AddIn>
+</RevitAddIns>

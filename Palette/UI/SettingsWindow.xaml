@@ -1,0 +1,326 @@
+<Window
+    x:Class="Palette.UI.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Palette.UI"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:Palette.UI.ViewModels"
+    x:Name="Root"
+    Title="Palette settings"
+    Width="560"
+    Height="680"
+    MinWidth="460"
+    MinHeight="420"
+    Background="{DynamicResource Window.Background}"
+    TextOptions.TextFormattingMode="Display"
+    UseLayoutRounding="True"
+    WindowStartupLocation="CenterScreen">
+    <!--  Standard Windows frame behaviour (snap, resize, shadow, Windows 11 corners) with a caption drawn by Palette.  -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="48"
+            CornerRadius="0"
+            GlassFrameThickness="0,0,0,1"
+            NonClientFrameEdges="None"
+            ResizeBorderThickness="6"
+            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Palette;component/UI/Themes/DarkTheme.xaml" />
+                <local:SharedDictionary Source="pack://application:,,,/Palette;component/UI/Themes/PaletteStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="CloseButton" TargetType="{x:Type Button}">
+                <Setter Property="Width" Value="46" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#C42B1C" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#A32519" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="SettingsItem" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Padding" Value="10,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Border
+                                x:Name="Bd"
+                                Margin="0,1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="Transparent"
+                                CornerRadius="{StaticResource Radius.Control}">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Row.Hover}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate DataType="{x:Type vm:SettingsRow}">
+                <Grid>
+                    <!--  Section header  -->
+                    <TextBlock
+                        x:Name="HeaderText"
+                        Margin="2,14,0,4"
+                        Style="{StaticResource Type.Heading}"
+                        Text="{Binding Text}"
+                        Visibility="Collapsed" />
+                    <!--  Empty-section hint  -->
+                    <TextBlock
+                        x:Name="HintText"
+                        Margin="2,0,0,6"
+                        Style="{StaticResource Type.Caption}"
+                        Text="{Binding Text}"
+                        Visibility="Collapsed" />
+                    <!--  Command  -->
+                    <Grid x:Name="CommandGrid" Height="40">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon
+                            x:Name="RowIcon"
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource Accent.Text}"
+                            Kind="{Binding IconKind, Converter={StaticResource IconKind}}" />
+                        <TextBlock
+                            x:Name="RowName"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="{StaticResource FontSize.Emphasis}"
+                            Foreground="{DynamicResource Text.Primary}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="12,0,8,0"
+                            VerticalAlignment="Center"
+                            FontSize="{StaticResource FontSize.Caption}"
+                            Foreground="{DynamicResource Text.Tertiary}"
+                            Text="{Binding Category}" />
+                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                            <Button
+                                x:Name="UpButton"
+                                AutomationProperties.Name="Move up"
+                                Command="{Binding DataContext.MoveUpCommand, ElementName=Root}"
+                                CommandParameter="{Binding}"
+                                IsEnabled="{Binding CanMoveUp}"
+                                Style="{StaticResource Button.Icon}"
+                                ToolTip="Move up">
+                                <materialDesign:PackIcon
+                                    Width="16"
+                                    Height="16"
+                                    Kind="ChevronUp" />
+                            </Button>
+                            <Button
+                                x:Name="DownButton"
+                                AutomationProperties.Name="Move down"
+                                Command="{Binding DataContext.MoveDownCommand, ElementName=Root}"
+                                CommandParameter="{Binding}"
+                                IsEnabled="{Binding CanMoveDown}"
+                                Style="{StaticResource Button.Icon}"
+                                ToolTip="Move down">
+                                <materialDesign:PackIcon
+                                    Width="16"
+                                    Height="16"
+                                    Kind="ChevronDown" />
+                            </Button>
+                            <Button
+                                x:Name="StarButton"
+                                Margin="6,0,0,0"
+                                AutomationProperties.Name="Favorite"
+                                Command="{Binding DataContext.ToggleFavoriteCommand, ElementName=Root}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource Button.Icon}"
+                                ToolTip="Add to favorites">
+                                <materialDesign:PackIcon
+                                    x:Name="StarIcon"
+                                    Width="16"
+                                    Height="16"
+                                    Kind="StarOutline" />
+                            </Button>
+                            <Button
+                                x:Name="EyeButton"
+                                AutomationProperties.Name="Hide"
+                                Command="{Binding DataContext.ToggleHiddenCommand, ElementName=Root}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource Button.Icon}"
+                                ToolTip="Hide from Palette">
+                                <materialDesign:PackIcon
+                                    x:Name="EyeIcon"
+                                    Width="16"
+                                    Height="16"
+                                    Kind="EyeOutline" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                        <Setter TargetName="HeaderText" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="CommandGrid" Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsHint}" Value="True">
+                        <Setter TargetName="HintText" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="CommandGrid" Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                        <Setter TargetName="StarIcon" Property="Kind" Value="Star" />
+                        <Setter TargetName="StarIcon" Property="Foreground" Value="{DynamicResource Status.Warning}" />
+                        <Setter TargetName="StarButton" Property="ToolTip" Value="Remove from favorites" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                        <Setter TargetName="UpButton" Property="Visibility" Value="Collapsed" />
+                        <Setter TargetName="DownButton" Property="Visibility" Value="Collapsed" />
+                        <Setter TargetName="StarButton" Property="Visibility" Value="Collapsed" />
+                        <Setter TargetName="EyeIcon" Property="Kind" Value="EyeOffOutline" />
+                        <Setter TargetName="EyeButton" Property="ToolTip" Value="Show in Palette" />
+                        <Setter TargetName="RowName" Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+                        <Setter TargetName="RowIcon" Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid
+        x:Name="RootGrid"
+        Background="{DynamicResource Window.Background}"
+        TextElement.FontFamily="{StaticResource Font.Text}"
+        TextElement.FontSize="{StaticResource FontSize.Body}"
+        TextElement.Foreground="{DynamicResource Text.Primary}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  Caption (draggable)  -->
+        <Grid Grid.Row="0">
+            <StackPanel
+                Margin="20,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Border
+                    Width="26"
+                    Height="26"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource Accent}"
+                    CornerRadius="7">
+                    <materialDesign:PackIcon
+                        Width="16"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource Text.OnAccent}"
+                        Kind="Magnify" />
+                </Border>
+                <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource Type.Section}"
+                    Text="Palette settings" />
+            </StackPanel>
+            <Button
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                AutomationProperties.Name="Close"
+                Click="OnCloseClick"
+                Style="{StaticResource CloseButton}"
+                ToolTip="Close">
+                <materialDesign:PackIcon
+                    Width="16"
+                    Height="16"
+                    Kind="Close" />
+            </Button>
+        </Grid>
+
+        <!--  Shortcut hint  -->
+        <Border
+            Grid.Row="1"
+            Margin="20,0,20,8"
+            Style="{StaticResource InsetCard}">
+            <TextBlock Style="{StaticResource Type.Secondary}">
+                <Run FontWeight="SemiBold" Text="Open Palette with a key." />
+                <Run Text="In Revit, choose View &#x25B8; User Interface &#x25B8; Keyboard Shortcuts, search for &#x201C;Palette&#x201D; and assign a shortcut to the Palette button." />
+            </TextBlock>
+        </Border>
+
+        <!--  Command list  -->
+        <ListBox
+            Grid.Row="2"
+            Margin="14,0,14,0"
+            Padding="0"
+            AutomationProperties.Name="Commands"
+            Background="Transparent"
+            BorderThickness="0"
+            ItemContainerStyle="{StaticResource SettingsItem}"
+            ItemsSource="{Binding Rows}"
+            ScrollViewer.CanContentScroll="True"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            SelectionMode="Single" />
+
+        <!--  Footer  -->
+        <Border
+            Grid.Row="3"
+            Padding="20,10"
+            BorderBrush="{DynamicResource Separator}"
+            BorderThickness="0,1,0,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource Type.Caption}"
+                        Text="Changes are saved automatically." />
+                    <Button
+                        Margin="8,0,0,0"
+                        Command="{Binding OpenFolderCommand}"
+                        Content="Open settings folder"
+                        Style="{StaticResource Button.Plain}" />
+                </StackPanel>
+                <Button
+                    HorizontalAlignment="Right"
+                    Click="OnCloseClick"
+                    Content="Done"
+                    IsDefault="True"
+                    Style="{StaticResource Button.Primary}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

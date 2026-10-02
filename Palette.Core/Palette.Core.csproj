@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Palette.Core: command model, registry, search, settings, recent commands, manifests and window placement maths.
+    Deliberately free of any Revit or WPF reference so it can be unit tested and shared by both Revit targets.
+    Palette.csproj compiles these sources into Palette.dll (a single assembly reloads cleanly with AppLoader).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Palette.Core</AssemblyName>
+    <RootNamespace>Palette.Core</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

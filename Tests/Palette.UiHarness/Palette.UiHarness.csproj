@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Developer harness: renders the Palette and settings windows outside Revit (fake commands) to PNG in dark and light
+    themes, and checks cursor-relative placement against the real monitors. Not part of the plugin.
+    Run it with: dotnet run Tests/Palette.UiHarness in Release, with property PaletteUseDefaultOutput=true;
+    the first program argument is the output folder.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>7.3</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Palette\Palette.csproj" />
+  </ItemGroup>
+
+</Project>
