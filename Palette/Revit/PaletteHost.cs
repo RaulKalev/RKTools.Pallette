@@ -66,6 +66,7 @@ namespace Palette.Revit
         /// <summary>First idle after startup: build the window once (XAML parse) so the first open is as fast as later ones.</summary>
         public static void Prewarm()
         {
+            RefreshRibbonCommands();
             try { EnsureWindow(); }
             catch (Exception ex) { PaletteLog.Error("Pre-creating the Palette window failed", ex); }
         }
@@ -74,6 +75,7 @@ namespace Palette.Revit
         public static void ShowPalette(UIApplication app)
         {
             RefreshManifests();
+            RefreshRibbonCommands();
             var context = ContextBuilder.Build(app, Registry);
             EnsureWindow().Open(context);
         }
@@ -123,6 +125,26 @@ namespace Palette.Revit
         }
 
         /// <summary>Loads *.palette.json manifests, but only when a file was added, removed or edited since the last scan.</summary>
+        private static string _ribbonSignature;
+
+        /// <summary>Lists the other RK Tools plugins' ribbon buttons; re-registers only when the set changed.</summary>
+        private static void RefreshRibbonCommands()
+        {
+            try
+            {
+                var found = RibbonScanner.Scan(App.TabName, App.PanelName);
+                var signature = string.Join("|", found.Select(c => c.Id + "=" + c.Name));
+                if (signature == _ribbonSignature) return;
+                _ribbonSignature = signature;
+                Registry.UnregisterSource(RibbonScanner.SourceName);
+                Registry.RegisterRange(found);
+            }
+            catch (Exception ex)
+            {
+                PaletteLog.Error("Refreshing ribbon commands failed", ex);
+            }
+        }
+
         private static void RefreshManifests()
         {
             try

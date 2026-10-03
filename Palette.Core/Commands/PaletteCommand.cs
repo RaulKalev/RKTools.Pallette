@@ -47,7 +47,8 @@ namespace Palette.Core.Commands
             IEnumerable<string> aliases = null,
             string iconKind = null,
             string source = null,
-            Func<PaletteContext, bool> isAvailable = null)
+            Func<PaletteContext, bool> isAvailable = null,
+            Func<object> iconImage = null)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("A command needs an id.", nameof(id));
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("A command needs a name.", nameof(name));
@@ -59,6 +60,7 @@ namespace Palette.Core.Commands
             Keywords = Clean(keywords);
             Aliases = Clean(aliases);
             IconKind = iconKind;
+            IconImage = iconImage;
             Source = source ?? "";
             Availability = isAvailable;
         }
@@ -78,6 +80,9 @@ namespace Palette.Core.Commands
 
         /// <summary>Material Design icon name (MaterialDesignThemes PackIconKind), resolved lazily by the UI.</summary>
         public string IconKind { get; }
+
+        /// <summary>Optional bitmap icon (an ImageSource, typed object to keep Core WPF-free), read when a row is shown so it follows theme changes. Wins over <see cref="IconKind"/>.</summary>
+        public Func<object> IconImage { get; }
 
         /// <summary>Who registered the command ("revit", "palette", a manifest file, a plugin name).</summary>
         public string Source { get; }

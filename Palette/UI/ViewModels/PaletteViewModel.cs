@@ -29,6 +29,8 @@ namespace Palette.UI.ViewModels
         public string Category => Command?.Category;
         public string Description => Command?.Description;
         public string IconKind => Command?.IconKind;
+        public object IconImage => Command?.IconImage?.Invoke();
+        public bool HasIconImage => Command?.IconImage != null;
 
         public bool IsFavorite
         {

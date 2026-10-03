@@ -41,6 +41,8 @@ namespace Palette.UI.ViewModels
         public string Name => Command?.Name;
         public string Category => Command?.Category;
         public string IconKind => Command?.IconKind;
+        public object IconImage => Command?.IconImage?.Invoke();
+        public bool HasIconImage => Command?.IconImage != null;
 
         public SettingsSection Section { get; set; }
 

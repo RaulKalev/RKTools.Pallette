@@ -50,11 +50,27 @@ namespace Palette.UI
                 });
             DataContext = _viewModel;
 
+            SourceInitialized += (s, e) => ApplyRoundedCorners();
             PreviewKeyDown += OnPreviewKeyDown;
             Deactivated += OnDeactivated;
             Closing += OnClosing;
             SizeChanged += (s, e) => WindowPositioner.KeepBottomAnchored(this, _placement);
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+        /// <summary>Windows 11 rounded window corners (DWMWA_WINDOW_CORNER_PREFERENCE = ROUND), like the other RK Tools windows.</summary>
+        private void ApplyRoundedCorners()
+        {
+            try
+            {
+                var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                int round = 2;
+                DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));
+            }
+            catch { /* older Windows: square corners */ }
         }
 
         /// <summary>Shows Palette next to the cursor with an empty search box that has keyboard focus.</summary>

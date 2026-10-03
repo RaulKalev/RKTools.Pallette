@@ -107,7 +107,25 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource Accent.Text}"
-                            Kind="{Binding IconKind, Converter={StaticResource IconKind}}" />
+                            Kind="{Binding IconKind, Converter={StaticResource IconKind}}">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasIconImage}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                        <Image
+                            Width="18"
+                            Height="18"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            RenderOptions.BitmapScalingMode="HighQuality"
+                            Source="{Binding IconImage}"
+                            Visibility="{Binding HasIconImage, Converter={StaticResource BoolToVis}}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
